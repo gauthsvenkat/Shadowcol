@@ -6,6 +6,8 @@ import librosa
 import librosa.display
 import argparse
 
+import time
+
 parser = argparse.ArgumentParser(description='Visualize mic input')
 parser.add_argument('-s', '--seconds', default = 20, type=int)
 parser.add_argument('-w', action='store_true')
@@ -34,8 +36,11 @@ print ("recording...")
 
 if args.w:
 	frames = []
+
+tot = []
  
 for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+	start = time.time()
 	plt.clf()
 	ax1 = plt.subplot(211)
 	ax2 = plt.subplot(212)
@@ -62,8 +67,12 @@ for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
 	
 	previous = data_int
 
+	end = time.time()
+	tot.append(end-start)
+	print("Time taken =", end - start)
 
 print ("finished recording")
+print("Total time =",sum(tot))
 
 # stop Recording
 stream.stop_stream()
