@@ -13,6 +13,7 @@ RATE = 44100
 CHUNK = 1024 * 4
 RECORD_SECONDS = 20
 WAVE_OUTPUT_FILENAME = "file.wav"
+previous = np.zeros((CHUNK, 1))
  
 audio = pyaudio.PyAudio()
 
@@ -28,8 +29,13 @@ for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
 	plt.axes().set_ylim(yrange)
 	data = stream.read(CHUNK)
 	data_int = np.frombuffer(data, dtype=dtype).reshape(-1, CHANNELS)
-	plt.plot(data_int)
+	
+	spec = np.concatenate((previous, data_int))
+	
+	plt.plot(spec)
 	plt.pause(0.01)
+	
+	previous = data_int
 
 plt.show()
 
