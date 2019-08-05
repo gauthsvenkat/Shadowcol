@@ -1,4 +1,5 @@
-librosa == 0.7.0
-matplotlib == 3.0.3
-numpy == 1.16.2
-pyaudio
+librosa==0.7.0
+PyAudio==0.2.11
+torch==1.0.1
+matplotlib==3.0.3
+numpy==1.16.2

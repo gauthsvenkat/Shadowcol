@@ -10,9 +10,13 @@ parser = argparse.ArgumentParser(description='Train SiameseNet')
 parser.add_argument('--save_location', '-sl', type=str, default='model/{}-epoch-{}.pth')
 parser.add_argument('--epochs', '-e', type=int, default=50)
 parser.add_argument('--save_every', '-se', type=int, default=20)
+parser.add_argument('--device', '-d', type=str, default=None)
 args = parser.parse_args()
 
-model = SiameseNet().cuda()
+if not args.device:
+	args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+model = SiameseNet().to(device=args.device)
 pairdata = Pairloader()
 datagen = DataLoader(pairdata)
 bce_loss = nn.BCELoss()
@@ -23,7 +27,7 @@ for epoch in range(args.epochs):
 	epoch_loss = 0.0
 	for i, batch in enumerate(datagen):
 
-		imgs, label = [batch[0][0].cuda(), batch[0][1].cuda()], batch[1].cuda()
+		imgs, label = [batch[0][0].to(device=args.device), batch[0][1].to(device=args.device)], batch[1].to(device=args.device)
 
 		optimizer.zero_grad()
 
