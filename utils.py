@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from glob import glob
 import os
-import random ; random.seed(69)
+import random
 
 
 class Pairloader(Dataset):
@@ -16,6 +16,9 @@ class Pairloader(Dataset):
 		self.split = split #train or valid
 		self.audio_files = glob(os.path.join(root_dir,split,'*.wav')) #get all the wav files
 		self.SR = 16000 #set sampling rate to 16000
+
+		if split=='train':
+			random.seed(69)
 
 	def __len__(self):
 		return len(self.audio_files)
@@ -34,9 +37,9 @@ class Pairloader(Dataset):
 		assert audio1_mfcc.shape == audio2_mfcc.shape, "MFCC shapes are not the same !" #make sure you're sane
 
 		if self.split == 'train':
-			return [audio1_mfcc[None], audio2_mfcc[None]], 1 if audio_file1.split('_')[0] == audio_file2.split('_')[0] else 0 #return both mfccs and labels if split is train
+			return [audio1_mfcc[None], audio2_mfcc[None]], torch.tensor([1], dtype=torch.float) if audio_file1.split('_')[0] == audio_file2.split('_')[0] else torch.tensor([0], dtype=torch.float) #return both mfccs and labels if split is train
 		elif self.split == 'valid':
-			return [audio1_mfcc[None], audio2_mfcc[None]] #else return only mfccs
+			return [audio1_mfcc[None], audio2_mfcc[None]], [audio_file1, audio_file2] #else return only mfccs
 
 
 class SiameseNet(nn.Module):
