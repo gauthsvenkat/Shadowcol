@@ -9,7 +9,7 @@ import os
 parser = argparse.ArgumentParser(description='Train SiameseNet')
 parser.add_argument('--save_location', '-sl', type=str, default='model/{}-epoch-{}.pth')
 parser.add_argument('--epochs', '-e', type=int, default=50)
-parser.add_argument('--save_every', '-se', type=int, default=20)
+parser.add_argument('--save_every', '-se', type=int, default=5)
 parser.add_argument('--device', '-d', type=str, default=None)
 args = parser.parse_args()
 

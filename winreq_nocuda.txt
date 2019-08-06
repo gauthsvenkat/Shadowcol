@@ -1,6 +1,6 @@
 librosa==0.7.0
 PyAudio==0.2.11
-torch==1.0.1
+https://download.pytorch.org/whl/cpu/torch-1.1.0-cp36-cp36m-win_amd64.whl
 matplotlib==3.0.3
 numpy==1.16.2
 auditok==0.1.5
