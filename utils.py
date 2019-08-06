@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from glob import glob
 import os
-import random
-
+import itertools
+from tqdm import tqdm
 
 class Pairloader(Dataset):
 	def __init__(self, root_dir='data', split='train'):
@@ -15,17 +15,15 @@ class Pairloader(Dataset):
 		self.root_dir = root_dir #set root directory housing the data. (Folder should contain train/ and valid/)
 		self.split = split #train or valid
 		self.audio_files = glob(os.path.join(root_dir,split,'*.wav')) #get all the wav files
+		self.all_combinations = list(itertools.combinations(self.audio_files, 2)) #get all combinations of 2 files from the dataset
 		self.SR = 16000 #set sampling rate to 16000
 
-		if split=='train':
-			random.seed(69)
-
 	def __len__(self):
-		return len(self.audio_files)
+		return len(self.all_combinations)
 
 	def __getitem__(self, idx):
 		
-		audio_file1, audio_file2 = random.sample(self.audio_files, 2) #randomly choose two files from audio_files
+		audio_file1, audio_file2 = self.all_combinations[idx] #randomly choose two files from audio_files
 
 		audio1, audio2 = [librosa.load(file)[0][:6400] for file in [audio_file1, audio_file2]] #load audio and keep only 6400 samples
 		audio1_center, audio2_center = [librosa.util.pad_center(audio, 7500) for audio in [audio1, audio2]] #center pad the audio to 7500
@@ -86,6 +84,10 @@ class SiameseNet(nn.Module):
 		return res
 
 
+class _tqdm(tqdm):
+	def format_num(self, n):
+		f = '{:.5f}'.format(n)
+		return f
 
 	
 

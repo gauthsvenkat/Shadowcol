@@ -3,3 +3,5 @@ PyAudio==0.2.11
 torch==1.0.1
 matplotlib==3.0.3
 numpy==1.16.2
+auditok==0.1.5
+tqdm==4.32.2
