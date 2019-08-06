@@ -3,7 +3,6 @@ import argparse
 import torch.optim as optim
 import torch.nn as nn
 from utils import Pairloader, SiameseNet, _tqdm as tqdm
-from tqdm import tqdm
 from torch.utils.data import DataLoader
 import os
 
