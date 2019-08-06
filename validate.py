@@ -13,7 +13,7 @@ if not args.device:
 	args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 model = SiameseNet().to(device=args.device)
-model.load_state_dict(torch.load(args.model_location.format('model',args.epoch)))
+model.load_state_dict(torch.load(args.model_location.format('model',args.epoch), map_location=args.device))
 model.eval()
 
 pairdata = Pairloader(split='valid')
