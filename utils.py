@@ -25,10 +25,11 @@ class Pairloader(Dataset):
 		
 		audio_file1, audio_file2 = self.all_combinations[idx] #randomly choose two files from audio_files
 
-		audio1, audio2 = [librosa.load(file)[0][:6400] for file in [audio_file1, audio_file2]] #load audio and keep only 6400 samples
-		audio1_center, audio2_center = [librosa.util.pad_center(audio, 7500) for audio in [audio1, audio2]] #center pad the audio to 7500
+		audio1, audio2 = [librosa.load(file)[0] for file in [audio_file1, audio_file2]] #load audios
+		audio1_trimmed, audio2_trimmed = [librosa.effects.trim(audio, top_db=7)[0] for audio in [audio1, audio2]] #trim trailing silence
+		audio1_center, audio2_center = [librosa.util.pad_center(audio[:4000], 4000) for audio in [audio1_trimmed, audio2_trimmed]] #center pad the audio to 4000
 
-		assert len(audio1) == len(audio2), "Audio lengths are not the same !" #make sure you're sane
+		assert len(audio1_center) == len(audio2_center), "Audio lengths are not the same !" #make sure you're sane
 
 		audio1_mfcc, audio2_mfcc = [librosa.feature.mfcc(y=audio, sr=self.SR) for audio in [audio1_center, audio2_center]] #compute the mfccs for both audios
 
@@ -51,8 +52,8 @@ class SiameseNet(nn.Module):
 		self.conv2 = nn.Conv2d(64, 128, 3)
 		self.conv3 = nn.Conv2d(128, 128, 2)
 		
-		self.linear1 = nn.Linear(3584, 1024)
-		self.linear2 = nn.Linear(1024, 1)
+		self.linear1 = nn.Linear(896, 512)
+		self.linear2 = nn.Linear(512, 1)
 
 	def forward(self, data):
 		res = []
@@ -88,12 +89,3 @@ class _tqdm(tqdm):
 	def format_num(self, n):
 		f = '{:.5f}'.format(n)
 		return f
-
-	
-
-
-
-
-
-
-
