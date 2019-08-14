@@ -48,4 +48,4 @@ for epoch in range(args.epochs):
 			os.mkdir('model/')
 
 		torch.save(model.state_dict(),args.save_location.format('model', epoch))
-		torch.save(optimizer.state_dict(), args.save_location.format('optimizer', epoch))
+		#torch.save(optimizer.state_dict(), args.save_location.format('optimizer', epoch))

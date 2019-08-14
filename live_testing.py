@@ -68,4 +68,11 @@ while True:
     scores.append(model([refs['down'], data_tensor]).cpu().detach().numpy()) 
     scores.append(model([refs['sil'], data_tensor]).cpu().detach().numpy()) 
 
-    print('Up : ',scores[0],' Down : ', scores[1], ' Silence : ', scores[2], ' time : ', time()-start)
+    #print('Up : ',scores[0],' Down : ', scores[1], ' Silence : ', scores[2], ' time : ', time()-start)
+
+    if scores.index(max(scores)) == 0:
+        print('Up')
+    elif scores.index(max(scores)) == 1:
+        print('Down')
+    elif scores.index(max(scores)) == 2:
+        print('Sil')
