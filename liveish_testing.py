@@ -1,7 +1,6 @@
 import librosa
 import numpy as np
 import torch
-import pyaudio
 from time import time
 import os
 import argparse
@@ -12,6 +11,7 @@ parser.add_argument('--model_location', '-l', type=str, default='model/{}-epoch-
 parser.add_argument('--epoch', '-e', type=int, default=None)
 parser.add_argument('--device', '-d', type=str, default=None)
 parser.add_argument('--ref', '-r', type=str, default='references/')
+parser.add_argument('-t', '--target', type=str, default='data/test.wav')
 args = parser.parse_args()
 
 if not args.device:
@@ -22,10 +22,7 @@ model = SiameseNet().to(device=args.device)
 model.load_state_dict(torch.load(args.model_location.format('model',args.epoch), map_location=args.device))
 model.eval()
 
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
 RATE = 16000
-CHUNK = 2000
 
 def preprocess(audio=None):
     audio_trimmed = librosa.effects.trim(audio, top_db=10)[0]
@@ -40,35 +37,17 @@ refs = {
         'down':preprocess(librosa.load(os.path.join(args.ref,'down.wav'), sr=RATE)[0]),
         'sil':preprocess(librosa.load(os.path.join(args.ref,'sil.wav'), sr=RATE)[0])
         }
+target = preprocess(librosa.load(args.target, sr=RATE)[0])
 
 
-previous = np.zeros((CHUNK, 1))
+scores = []
+start = time()
 
-audio = pyaudio.PyAudio()
+scores.append(model([refs['up'], target]).cpu().detach().numpy()) 
+scores.append(model([refs['down'], target]).cpu().detach().numpy()) 
+scores.append(model([refs['sil'], target]).cpu().detach().numpy()) 
 
-stream = audio.open(format=FORMAT,
-                    channels=CHANNELS,
-                    rate=RATE,
-                    input=True,
-                    frames_per_buffer=CHUNK)
-
-print("Recording...")
-
-while True:
-    scores = []
-    start = time()
-    
-    data = stream.read(CHUNK)
-    data_int = np.frombuffer(data, dtype='<i2').reshape(-1, CHANNELS) / (2**15)
-    data_concat = np.squeeze(np.concatenate((previous, data_int)))
-    previous = data_int
-    data_tensor = preprocess(data_concat)
-
-    scores.append(model([refs['up'], data_tensor]).cpu().detach().numpy()) 
-    scores.append(model([refs['down'], data_tensor]).cpu().detach().numpy()) 
-    scores.append(model([refs['sil'], data_tensor]).cpu().detach().numpy()) 
-
-    print('Up : ',scores[0],' Down : ', scores[1], ' Silence : ', scores[2], ' time : ', time()-start)
+print('Up : ',scores[0],' Down : ', scores[1], ' Silence : ', scores[2], ' time : ', time()-start)
 
 '''    if scores.index(max(scores)) == 0:
         print('Up')
