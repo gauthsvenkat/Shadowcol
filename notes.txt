@@ -1,0 +1,2 @@
+1) Preprocess ref audios and store the feature vectors (for faster inference)
+2) Try different a different siamese network
