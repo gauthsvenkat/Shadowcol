@@ -20,7 +20,7 @@ if not args.device:
 print('Loading model')
 model = SiameseNet().to(device=args.device)
 model.load_state_dict(torch.load(args.model_location.format('model',args.epoch), map_location=args.device))
-model.eval()
+model.train()
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -28,7 +28,7 @@ RATE = 16000
 CHUNK = 2000
 
 def preprocess(audio=None):
-    audio_trimmed = librosa.effects.trim(audio, top_db=10)[0]
+    audio_trimmed = librosa.effects.trim(audio, top_db=7)[0]
     audio_center = librosa.util.pad_center(audio_trimmed[:4000], 4000)
     audio_mfcc = librosa.feature.mfcc(y=audio_center, sr=RATE)
     audio_tensor = torch.tensor(audio_mfcc[None,None])
@@ -64,16 +64,12 @@ while True:
     previous = data_int
     data_tensor = preprocess(data_concat)
 
-    scores.append(model([refs['up'], data_tensor]).cpu().detach().numpy()) 
-    scores.append(model([refs['down'], data_tensor]).cpu().detach().numpy()) 
-    scores.append(model([refs['sil'], data_tensor]).cpu().detach().numpy()) 
+    scores.append(model([refs['up'], data_tensor]).detach()) 
+    scores.append(model([refs['down'], data_tensor]).detach()) 
+    scores.append(model([refs['sil'], data_tensor]).detach()) 
 
+    if np.argmax(scores) == 2:
+        continue
+    
     print('Up : ',scores[0],' Down : ', scores[1], ' Silence : ', scores[2], ' time : ', time()-start)
 
-'''    if scores.index(max(scores)) == 0:
-        print('Up')
-    elif scores.index(max(scores)) == 1:
-        print('Down')
-    elif scores.index(max(scores)) == 2:
-        print('Sil')
-'''

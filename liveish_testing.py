@@ -20,12 +20,12 @@ if not args.device:
 print('Loading model')
 model = SiameseNet().to(device=args.device)
 model.load_state_dict(torch.load(args.model_location.format('model',args.epoch), map_location=args.device))
-model.eval()
+model.train()
 
 RATE = 16000
 
 def preprocess(audio=None):
-    audio_trimmed = librosa.effects.trim(audio, top_db=10)[0]
+    audio_trimmed = librosa.effects.trim(audio, top_db=7)[0]
     audio_center = librosa.util.pad_center(audio_trimmed[:4000], 4000)
     audio_mfcc = librosa.feature.mfcc(y=audio_center, sr=RATE)
     audio_tensor = torch.tensor(audio_mfcc[None,None])

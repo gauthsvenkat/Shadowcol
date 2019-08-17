@@ -25,7 +25,7 @@ class Pairloader(Dataset):
 		
 		audio_file1, audio_file2 = self.all_combinations[idx] #randomly choose two files from audio_files
 
-		audio1, audio2 = [librosa.load(file)[0] for file in [audio_file1, audio_file2]] #load audios
+		audio1, audio2 = [librosa.load(file, sr=self.SR)[0] for file in [audio_file1, audio_file2]] #load audios
 		audio1_trimmed, audio2_trimmed = [librosa.effects.trim(audio, top_db=7)[0] for audio in [audio1, audio2]] #trim trailing silence
 		audio1_center, audio2_center = [librosa.util.pad_center(audio[:4000], 4000) for audio in [audio1_trimmed, audio2_trimmed]] #center pad the audio to 4000
 
