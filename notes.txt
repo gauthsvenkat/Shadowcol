@@ -1,2 +1,6 @@
-1) Preprocess ref audios and store the feature vectors (for faster inference)
-2) Try different a different siamese network
+DONE - 1) Preprocess ref audios and store the feature vectors (for faster inference)
+
+PENDING - 2) Try different a different siamese network
+
+##COMMENTS##
+- I don't know if it's just me but I think the model is faster on a cpu

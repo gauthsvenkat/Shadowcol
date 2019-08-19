@@ -1,4 +1,4 @@
-from pyWinKey import press
+from pyKey import press
 import librosa
 import numpy as np
 import torch
@@ -9,20 +9,14 @@ import argparse
 from utils import SiameseNet
 
 parser = argparse.ArgumentParser(description='Live test SiameseNet')
-parser.add_argument('--model_location', '-l', type=str, default='model/{}-epoch-{}.pth')
+parser.add_argument('--model_location', '-l', type=str, default='model/model-epoch-{}.pth')
 parser.add_argument('--epoch', '-e', type=int, default=None)
 parser.add_argument('--device', '-d', type=str, default=None)
 parser.add_argument('--ref', '-r', type=str, default='references/')
 parser.add_argument('-v', '--verbose', action='store_true')
 args = parser.parse_args()
-
 if not args.device:
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-print('Loading model')
-model = SiameseNet().to(device=args.device)
-model.load_state_dict(torch.load(args.model_location.format('model',args.epoch), map_location=args.device))
-model.train()
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -40,9 +34,12 @@ def preprocess(audio=None):
 refs = {
         'up':preprocess(librosa.load(os.path.join(args.ref,'up.wav'), sr=RATE)[0]),
         'down':preprocess(librosa.load(os.path.join(args.ref,'down.wav'), sr=RATE)[0]),
-        'sil':preprocess(librosa.load(os.path.join(args.ref,'sil.wav'), sr=RATE)[0])
+        'sil':preprocess(librosa.load(os.path.join(args.ref,'sil.wav'), sr=RATE)[0]),
+        'quit':preprocess(librosa.load(os.path.join(args.ref,'quit.wav'), sr=RATE)[0])
         }
 
+print('Loading model')
+model = SiameseNet(mode='inference', weights_path=args.model_location.format(args.epoch), refs_dict=refs, device=args.device)
 
 previous = np.zeros((CHUNK, 1))
 
@@ -57,7 +54,6 @@ stream = audio.open(format=FORMAT,
 print("Recording...")
 
 while True:
-    scores = []
     start = time()
     
     data = stream.read(CHUNK)
@@ -65,15 +61,15 @@ while True:
     data_concat = np.squeeze(np.concatenate((previous, data_int)))
     previous = data_int
     data_tensor = preprocess(data_concat)
-
-    scores.append(model([refs['up'], data_tensor]).detach()) 
-    scores.append(model([refs['down'], data_tensor]).detach()) 
-    scores.append(model([refs['sil'], data_tensor]).detach()) 
+    
+    scores = model(data_tensor)
 
     if np.argmax(scores) == 0:
         press('UP')
     elif np.argmax(scores) == 1:
     	press('DOWN')
+    elif np.argmax(scores) == 3:
+        break
 
     if args.verbose:
         print('Up : ',scores[0],' Down : ', scores[1], ' Silence : ', scores[2], ' time : ', time()-start)

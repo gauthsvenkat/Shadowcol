@@ -14,38 +14,37 @@ parser.add_argument('--device', '-d', type=str, default=None)
 args = parser.parse_args()
 
 if not args.device:
-	args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-model = SiameseNet().to(device=args.device)
-datagen = DataLoader(Pairloader(), shuffle=True)
+model = SiameseNet(mode='train', device=args.device)
+datagen = DataLoader(Pairloader(split='train'), shuffle=True)
 bce_loss = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
 for epoch in range(args.epochs):
-	model.train()
-	epoch_loss = 0.0
+    epoch_loss = 0.0
 
-	with tqdm(datagen) as t:
-		for i, batch in enumerate(t):
+    with tqdm(datagen) as t:
+        for i, batch in enumerate(t):
 
-			t.set_description('EPOCH: %i'%epoch)
+            t.set_description('EPOCH: %i'%(epoch+1))
 
-			imgs, label = [batch[0][0].to(device=args.device), batch[0][1].to(device=args.device)], batch[1].to(device=args.device)
+            data1, data2, label = batch[0][0].to(device=args.device), batch[0][1].to(device=args.device), batch[1].to(device=args.device)
 
-			optimizer.zero_grad()
-			output = model(imgs)
-			loss = bce_loss(output, label)
-			loss.backward()
-			optimizer.step()
+            optimizer.zero_grad()
+            output = model(data1, data2)
+            loss = bce_loss(output, label)
+            loss.backward()
+            optimizer.step()
 
-			epoch_loss+=loss.item()
-			t.set_postfix(loss=epoch_loss/(i+1))
+            epoch_loss+=loss.item()
+            t.set_postfix(loss=epoch_loss/(i+1))
 
-	print('Loss-{}'.format(loss.item()/(i+1)))
+    print('Loss-{}'.format(loss.item()/(i+1)))
 
-	if (epoch+1)%args.save_every == 0:
-		if not os.path.exists('model/'):
-			os.mkdir('model/')
+    if (epoch+1)%args.save_every == 0:
+        if not os.path.exists('model/'):
+            os.mkdir('model/')
 
-		torch.save(model.state_dict(),args.save_location.format('model', epoch))
-		#torch.save(optimizer.state_dict(), args.save_location.format('optimizer', epoch))
+        torch.save(model.state_dict(),args.save_location.format('model', epoch+1))
+        #torch.save(optimizer.state_dict(), args.save_location.format('optimizer', epoch+1))
