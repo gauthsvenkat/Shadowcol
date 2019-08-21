@@ -21,7 +21,7 @@ if not args.device:
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
-CHUNK = 2000
+CHUNK = 4000
 
 def preprocess(audio=None):
     audio_trimmed = librosa.effects.trim(audio, top_db=7)[0]
@@ -58,9 +58,7 @@ while True:
     
     data = stream.read(CHUNK)
     data_int = np.frombuffer(data, dtype='<i2').reshape(-1, CHANNELS) / (2**15)
-    data_concat = np.squeeze(np.concatenate((previous, data_int)))
-    previous = data_int
-    data_tensor = preprocess(data_concat)
+    data_tensor = preprocess(np.squeeze(data_int))
     
     scores = model(data_tensor)
 
@@ -73,4 +71,3 @@ while True:
 
     if args.verbose:
         print('Up : ',scores[0],' Down : ', scores[1], ' Silence : ', scores[2], ' time : ', time()-start)
-
