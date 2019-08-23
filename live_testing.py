@@ -1,4 +1,4 @@
-from pyKey import press
+from pyKey import press, pressKey, releaseKey
 import librosa
 import numpy as np
 import torch
@@ -34,9 +34,9 @@ refs = {
         'down':preprocess(librosa.load(os.path.join(args.ref,'down.wav'), sr=RATE)[0]),
         'left':preprocess(librosa.load(os.path.join(args.ref,'left.wav'), sr=RATE)[0]),
         'right':preprocess(librosa.load(os.path.join(args.ref,'right.wav'), sr=RATE)[0]),
-        'action':preprocess(librosa.load(os.path.join(args.ref,'action.wav'), sr=RATE)[0])
-        'stop':preprocess(librosa.load(os.path.join(args.ref,'stop.wav'), sr=RATE)[0])
-        'sil':preprocess(librosa.load(os.path.join(args.ref,'sil.wav'), sr=RATE)[0]),
+        'action':preprocess(librosa.load(os.path.join(args.ref,'action.wav'), sr=RATE)[0]),
+        'stop':preprocess(librosa.load(os.path.join(args.ref,'stop.wav'), sr=RATE)[0]),
+        'sil':preprocess(librosa.load(os.path.join(args.ref,'sil.wav'), sr=RATE)[0])
         }
 
 print('Loading model')
@@ -69,27 +69,24 @@ while True:
         press('UP')
 
     elif np.argmax(scores) == 1:
-    	press('DOWN')
+        press('DOWN')
 
     elif np.argmax(scores) == 2: #Release any key that is pressed and press left
-        if pressed_key: releaseKey(pressed_key)
+        if pressed_key is not None: releaseKey(pressed_key)
         pressed_key = 'LEFT'
-    	pressKey(pressed_key)
+        pressKey(pressed_key)
 
     elif np.argmax(scores) == 3: #Release any key that is pressed and press right
-        if pressed_key: releaseKey(pressed_key)
+        if pressed_key is not None: releaseKey(pressed_key)
         pressed_key = 'RIGHT'
-    	pressKey(pressed_key)
+        pressKey(pressed_key)
 
     elif np.argmax(scores) == 4: #action key
-    	press('LCTRL')
+        press('LCTRL')
 
     elif np.argmax(scores) == 5: #stop command that will release any key that is pressed
-        if pressed_key: releaseKey(pressed_key)
+        if pressed_key is not None: releaseKey(pressed_key)
         pressed_key = None
-
-    elif np.argmax(scores) == 6:
-        break
 
     if args.verbose:
         print(' Up : ',scores[0], end='')
