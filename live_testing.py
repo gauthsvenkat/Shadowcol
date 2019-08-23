@@ -11,12 +11,10 @@ from utils import SiameseNet
 parser = argparse.ArgumentParser(description='Live test SiameseNet')
 parser.add_argument('--model_location', '-l', type=str, default='model/model-epoch-{}.pth')
 parser.add_argument('--epoch', '-e', type=int, default=None)
-parser.add_argument('--device', '-d', type=str, default=None)
+parser.add_argument('--device', '-d', type=str, default='cpu')
 parser.add_argument('--ref', '-r', type=str, default='references/')
 parser.add_argument('-v', '--verbose', action='store_true')
 args = parser.parse_args()
-if not args.device:
-    args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -34,8 +32,11 @@ def preprocess(audio=None):
 refs = {
         'up':preprocess(librosa.load(os.path.join(args.ref,'up.wav'), sr=RATE)[0]),
         'down':preprocess(librosa.load(os.path.join(args.ref,'down.wav'), sr=RATE)[0]),
+        'left':preprocess(librosa.load(os.path.join(args.ref,'left.wav'), sr=RATE)[0]),
+        'right':preprocess(librosa.load(os.path.join(args.ref,'right.wav'), sr=RATE)[0]),
+        'action':preprocess(librosa.load(os.path.join(args.ref,'action.wav'), sr=RATE)[0])
+        'stop':preprocess(librosa.load(os.path.join(args.ref,'stop.wav'), sr=RATE)[0])
         'sil':preprocess(librosa.load(os.path.join(args.ref,'sil.wav'), sr=RATE)[0]),
-        'quit':preprocess(librosa.load(os.path.join(args.ref,'quit.wav'), sr=RATE)[0])
         }
 
 print('Loading model')
@@ -54,6 +55,8 @@ stream = audio.open(format=FORMAT,
 print("Recording...")
 
 while True:
+    pressed_key = None
+
     start = time()
     
     data = stream.read(CHUNK)
@@ -62,12 +65,36 @@ while True:
     
     scores = model(data_tensor)
 
-    if np.argmax(scores) == 0:
+    if np.argmax(scores) == 0: 
         press('UP')
+
     elif np.argmax(scores) == 1:
     	press('DOWN')
-    elif np.argmax(scores) == 3:
+
+    elif np.argmax(scores) == 2: #Release any key that is pressed and press left
+        if pressed_key: releaseKey(pressed_key)
+        pressed_key = 'LEFT'
+    	pressKey(pressed_key)
+
+    elif np.argmax(scores) == 3: #Release any key that is pressed and press right
+        if pressed_key: releaseKey(pressed_key)
+        pressed_key = 'RIGHT'
+    	pressKey(pressed_key)
+
+    elif np.argmax(scores) == 4: #action key
+    	press('LCTRL')
+
+    elif np.argmax(scores) == 5: #stop command that will release any key that is pressed
+        if pressed_key: releaseKey(pressed_key)
+        pressed_key = None
+
+    elif np.argmax(scores) == 6:
         break
 
     if args.verbose:
-        print('Up : ',scores[0],' Down : ', scores[1], ' Silence : ', scores[2], ' time : ', time()-start)
+        print(' Up : ',scores[0], end='')
+        print(' Down : ',scores[1], end='')
+        print(' Left : ',scores[2], end='')
+        print(' Right : ',scores[3], end='')
+        print(' Action : ',scores[4], end='')
+        print(' Stop : ',scores[5], end='')
