@@ -3,7 +3,7 @@ import librosa
 import numpy as np
 import torch
 import pyaudio
-from time import time
+from time import time, sleep
 import os
 import argparse
 from utils import SiameseNet
@@ -66,27 +66,28 @@ while True:
     scores = model(data_tensor)
 
     if np.argmax(scores) == 0: 
-        press('UP')
+        press('UP'); sleep(0.4)
 
     elif np.argmax(scores) == 1:
-        press('DOWN')
+        press('DOWN'); sleep(0.4)
 
     elif np.argmax(scores) == 2: #Release any key that is pressed and press left
         if pressed_key is not None: releaseKey(pressed_key)
         pressed_key = 'LEFT'
-        pressKey(pressed_key)
+        pressKey(pressed_key); sleep(0.4)
 
     elif np.argmax(scores) == 3: #Release any key that is pressed and press right
         if pressed_key is not None: releaseKey(pressed_key)
         pressed_key = 'RIGHT'
-        pressKey(pressed_key)
+        pressKey(pressed_key); sleep(0.4)
 
     elif np.argmax(scores) == 4: #action key
-        press('LCTRL')
+        press('LCTRL'); sleep(0.4)
 
     elif np.argmax(scores) == 5: #stop command that will release any key that is pressed
         if pressed_key is not None: releaseKey(pressed_key)
         pressed_key = None
+        sleep(0.4)
 
     if args.verbose:
         print(' Up : ',scores[0], end='')
