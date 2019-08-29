@@ -4,4 +4,4 @@ PENDING - 2) Try different a different siamese network
 
 ##COMMENTS##
 - I don't know if it's just me but I think the model is faster on a cpu
-- Taking 4000 chunks is better than taking 2000 chunks and concating with prev
+- Taking 4000 chunks is better than taking 2000 chunks and concatinating with prev
