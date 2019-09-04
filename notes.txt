@@ -2,6 +2,8 @@ DONE - 1) Preprocess ref audios and store the feature vectors (for faster infere
 
 PENDING - 2) Try different a different siamese network
 
+PENDING - 3) Try using average of training data's features for references
+
 ##COMMENTS##
 - I don't know if it's just me but I think the model is faster on a cpu
 - Taking 4000 chunks is better than taking 2000 chunks and concatinating with prev

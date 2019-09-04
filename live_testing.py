@@ -13,7 +13,7 @@ parser.add_argument('--model_location', '-l', type=str, default='model/model-epo
 parser.add_argument('--epoch', '-e', type=int, default=None)
 parser.add_argument('--device', '-d', type=str, default=None)
 parser.add_argument('--ref', '-r', type=str, default='references/')
-parser.add_argument('-v', '--verbose', action='store_true')
+parser.add_argument('--verbose', '-v', action='store_true')
 args = parser.parse_args()
 if not args.device:
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
