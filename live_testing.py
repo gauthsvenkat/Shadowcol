@@ -69,5 +69,5 @@ while True:
     elif np.argmax(scores) == 3:
         break
 
-    if args.verbose:
+    if args.verbose and np.argmax(scores) != 2:
         print('Up : ',scores[0],' Down : ', scores[1], ' Silence : ', scores[2], ' time : ', time()-start)
