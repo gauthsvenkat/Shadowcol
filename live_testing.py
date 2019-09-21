@@ -20,6 +20,8 @@ FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
 CHUNK = 4000
+pressed_key = None
+action_key = False
 
 def preprocess(audio=None):
     audio_trimmed = librosa.effects.trim(audio, top_db=7)[0]
@@ -55,8 +57,7 @@ stream = audio.open(format=FORMAT,
 print("Recording...")
 
 while True:
-    pressed_key = None
-
+    
     start = time()
     
     data = stream.read(CHUNK)
@@ -66,33 +67,45 @@ while True:
     scores = model(data_tensor)
 
     if np.argmax(scores) == 0: 
-        press('UP'); sleep(0.4)
-
-    elif np.argmax(scores) == 1:
-        press('DOWN'); sleep(0.4)
-
-    elif np.argmax(scores) == 2: #Release any key that is pressed and press left
-        if pressed_key is not None: releaseKey(pressed_key)
-        pressed_key = 'LEFT'
-        pressKey(pressed_key); sleep(0.4)
-
-    elif np.argmax(scores) == 3: #Release any key that is pressed and press right
-        if pressed_key is not None: releaseKey(pressed_key)
-        pressed_key = 'RIGHT'
-        pressKey(pressed_key); sleep(0.4)
-
-    elif np.argmax(scores) == 4: #action key
-        press('LCTRL'); sleep(0.4)
-
-    elif np.argmax(scores) == 5: #stop command that will release any key that is pressed
-        if pressed_key is not None: releaseKey(pressed_key)
-        pressed_key = None
+        press('UP', 0.1)
+        if args.verbose: print('UP')
         sleep(0.4)
 
-    if args.verbose:
-        print(' Up : ',scores[0], end='')
-        print(' Down : ',scores[1], end='')
-        print(' Left : ',scores[2], end='')
-        print(' Right : ',scores[3], end='')
-        print(' Action : ',scores[4], end='')
-        print(' Stop : ',scores[5], end='')
+    elif np.argmax(scores) == 1:
+        press('DOWN', 0.1)
+        if args.verbose: print('DOWN')
+        sleep(0.4)
+
+    elif np.argmax(scores) == 2: #Release any key that is pressed and press left
+        if pressed_key is not None:
+            releaseKey(pressed_key)
+        pressed_key = 'LEFT'
+        pressKey(pressed_key)
+        if args.verbose: print(pressed_key)
+        sleep(0.4)
+
+    elif np.argmax(scores) == 3: #Release any key that is pressed and press right
+        if pressed_key is not None:
+            releaseKey(pressed_key)
+        pressed_key = 'RIGHT'
+        pressKey(pressed_key)
+        if args.verbose: print(pressed_key)
+        sleep(0.4)
+
+    elif np.argmax(scores) == 4: #action key
+        action_key = True
+        pressKey('CTRL')
+        if args.verbose: print('CTRL')
+        sleep(0.4)
+
+    elif np.argmax(scores) == 5: #stop command that will release any key that is pressed
+        if pressed_key is not None: 
+            releaseKey(pressed_key)
+            if args.verbose: print('RELEASED', pressed_key)
+        pressed_key = None
+
+        if action_key:
+            releaseKey('CTRL')
+            action_key = False
+            if args.verbose: print('RELEASED CTRL')
+        sleep(0.4)
