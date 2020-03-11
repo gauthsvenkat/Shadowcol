@@ -7,6 +7,13 @@ from time import time, sleep
 import os
 import argparse
 from utils import SiameseNet
+import signal
+
+def signal_handler(sig, frame):
+    print('Average time per iteration is', (time()-start)/ctr)
+    exit()
+
+signal.signal(signal.SIGINT, signal_handler)
 
 parser = argparse.ArgumentParser(description='Live test SiameseNet')
 parser.add_argument('--model_location', '-l', type=str, default='model/model-epoch-{}.pth')
@@ -55,6 +62,8 @@ stream = audio.open(format=FORMAT,
                     frames_per_buffer=CHUNK)
 
 print("Recording...")
+
+ctr = 0
 
 while True:
     
@@ -109,3 +118,7 @@ while True:
             action_key = False
             if args.verbose: print('RELEASED CTRL')
         sleep(0.4)
+
+    ctr+=1
+
+

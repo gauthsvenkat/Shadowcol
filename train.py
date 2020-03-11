@@ -5,6 +5,7 @@ import torch.nn as nn
 from utils import Pairloader, SiameseNet, _tqdm as tqdm
 from torch.utils.data import DataLoader
 import os
+from time import time
 
 parser = argparse.ArgumentParser(description='Train SiameseNet')
 parser.add_argument('--save_location', '-sl', type=str, default='model/{}-epoch-{}.pth')
@@ -21,6 +22,7 @@ datagen = DataLoader(Pairloader(split='train'), shuffle=True)
 bce_loss = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
+start = time()
 for epoch in range(args.epochs):
     epoch_loss = 0.0
 
@@ -48,3 +50,5 @@ for epoch in range(args.epochs):
 
         torch.save(model.state_dict(),args.save_location.format('model', epoch+1))
         #torch.save(optimizer.state_dict(), args.save_location.format('optimizer', epoch+1))
+
+print('Total time took -', time() - start, 'seconds')
