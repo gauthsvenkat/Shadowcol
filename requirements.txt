@@ -1,5 +1,5 @@
 pyKey
 librosa==0.7.0
-numpy==1.16.2
+numpy==1.22.0
 auditok==0.1.5
 tqdm==4.32.2
